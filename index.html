@@ -1,3 +1,5 @@
+<script>window.demoVersion = '2018.06.06';</script>
+
 <!--
 > Muaz Khan     - www.MuazKhan.com
 > MIT License   - www.WebRTC-Experiment.com/licence
@@ -77,29 +79,29 @@
     </style>
 
     <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
-    <script src="https://cdn.webrtc-experiment.com/gif-recorder.js"></script>
 
     <!-- for Edge/FF/Chrome/Opera/etc. getUserMedia support -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
     <script src="https://cdn.webrtc-experiment.com/DetectRTC.js"> </script>
+
+    <!-- video element -->
+    <link href="https://cdn.webrtc-experiment.com/getHTMLMediaElement.css" rel="stylesheet">
+    <script src="https://cdn.webrtc-experiment.com/getHTMLMediaElement.js"></script>
 </head>
 
 <body>
     <article>
         <header style="text-align: center;">
             <h1>
-                RecordRTC | WebRTC Audio+Video+Screen Recording
+                Audio+Video+Screen Recording | <a href="https://github.com/muaz-khan/RecordRTC">Record WebRTC</a>
             </h1>
-            <p style="margin:0;margin-bottom:-30px;">
-                <a href="https://www.webrtc-experiment.com/">HOME</a>
-                <span> &copy; </span>
-                <a href="http://www.MuazKhan.com/" target="_blank">Muaz Khan</a> .
-                <a href="http://twitter.com/WebRTCWeb" target="_blank" title="Twitter profile for WebRTC Experiments">@WebRTCWeb</a> .
-                <a href="https://github.com/muaz-khan?tab=repositories" target="_blank" title="Github Profile">Github</a> .
-                <a href="https://github.com/muaz-khan/RecordRTC/issues?state=open" target="_blank">Latest issues</a> .
-                <a href="https://github.com/muaz-khan/RecordRTC/commits/master" target="_blank">What's New?</a>
 
-                <br>
+            <p style="margin:0;margin-bottom:-30px;margin-top: 15px;">
+                <a href="https://github.com/muaz-khan/RecordRTC">Github Source Codes</a> |
+                <a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/">Canvas Recording</a> |
+                <a href="https://www.webrtc-experiment.com/RecordRTC/simple-demos/">Simple Demos</a>
+
+                <br><br>
 
                 <a href="https://www.npmjs.com/package/recordrtc"><img src="https://img.shields.io/npm/v/recordrtc.svg"></a>
                 <a href="https://www.npmjs.com/package/recordrtc"><img src="https://img.shields.io/npm/dm/recordrtc.svg"></a>
@@ -107,10 +109,15 @@
             </p>
         </header>
 
+        <section style="margin: 20px; text-align: center; color: red;">
+            <small id="demoVersion"></small>
+            <script>var date=new Date(window.demoVersion),month=date.toLocaleString("en-us",{month:"long"}),day=date.getUTCDate();day.toString().length<=9&&(day=day.toString().length == 1 ? "0"+day : day);var year=date.getUTCFullYear(); document.getElementById("demoVersion").innerHTML="Last Updated On: <time>"+month+" "+day+" "+year+"</time>";</script>
+        </section>
+
         <div class="github-stargazers"></div>
 
         <section class="experiment recordrtc">
-            <h2 class="header">
+            <h2 class="header" style="margin: 0;">
                 <select class="recording-media">
                     <option value="record-audio-plus-video">Microphone+Camera</option>
                     <option value="record-audio">Microphone</option>
@@ -180,7 +187,7 @@
                       <span
                         class="g-signin"
                         data-callback="signinCallback"
-                        data-clientid="41556190767-7amutgh7ug0dfkkeb9fkrpt8j86rv5o3.apps.googleusercontent.com"
+                        data-clientid="41556190767-115ifahd55lk4ln5pop4jus55cr4l7oh.apps.googleusercontent.com"
                         data-cookiepolicy="single_host_origin"
                         data-scope="https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube">
                       </span>
@@ -190,9 +197,7 @@
                 </div>
             </div>
 
-            <div style="margin-top: 10px;">
-                <video id="recording-player" controls muted></video>
-            </div>
+            <div style="margin-top: 10px;" id="recording-player"></div>
         </section>
 
         <script>
@@ -245,7 +250,31 @@
         </script>
 
         <script>
-            var recordingPlayer = document.querySelector('#recording-player');
+            var video = document.createElement('video');
+            video.controls = false;
+            var mediaElement = getHTMLMediaElement(video, {
+                title: 'Recording status: inactive',
+                buttons: ['full-screen'/*, 'take-snapshot'*/],
+                showOnMouseEnter: false,
+                width: 360,
+                onTakeSnapshot: function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = mediaElement.clientWidth;
+                    canvas.height = mediaElement.clientHeight;
+
+                    var context = canvas.getContext('2d');
+                    context.drawImage(recordingPlayer, 0, 0, canvas.width, canvas.height);
+
+                    window.open(canvas.toDataURL('image/png'));
+                }
+            });
+            document.getElementById('recording-player').appendChild(mediaElement);
+
+            var div = document.createElement('section');
+            mediaElement.media.parentNode.appendChild(div);
+            div.appendChild(mediaElement.media);
+            
+            var recordingPlayer = mediaElement.media;
             var recordingMedia = document.querySelector('.recording-media');
             var mediaContainerFormat = document.querySelector('.media-container-format');
             var mimeType = 'video/webm';
@@ -275,7 +304,7 @@
                         button.disableStateWaiting = false;
                     }, 2000);
 
-                    button.innerHTML = 'Star Recording';
+                    button.innerHTML = 'Start Recording';
 
                     function stopStream() {
                         if(button.stream && button.stream.stop) {
@@ -291,6 +320,9 @@
                         }
 
                         videoBitsPerSecond = null;
+                        var html = 'Recording status: stopped';
+                        html += '<br>Size: ' + bytesToSize(button.recordRTC.getBlob().size);
+                        recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = html;
                     }
 
                     if(button.recordRTC) {
@@ -312,6 +344,18 @@
                         }
                         else {
                             button.recordRTC.stopRecording(function(url) {
+                                if(button.blobs && button.blobs.length) {
+                                    var blob = new File(button.blobs, getFileName(fileExtension), {
+                                        type: mimeType
+                                    });
+                                    
+                                    button.recordRTC.getBlob = function() {
+                                        return blob;
+                                    };
+
+                                    url = URL.createObjectURL(blob);
+                                }
+
                                 button.recordingEndedCallback(url);
                                 saveToDiskOrOpenNewTab(button.recordRTC);
                                 stopStream();
@@ -353,15 +397,7 @@
                         if(DetectRTC.browser.name === 'Safari') return;
                         
                         if(error.name === 'PermissionDeniedError' && DetectRTC.browser.name === 'Firefox') {
-                            InstallTrigger.install({
-                                'Foo': {
-                                    // URL: 'https://addons.mozilla.org/en-US/firefox/addon/enable-screen-capturing/',
-                                    URL: 'https://addons.cdn.mozilla.net/user-media/addons/655146/enable_screen_capturing_in_firefox-1.1.001-fx.xpi?filehash=sha256%3Acb13851aaca148fcbd6672fc2dddfb9653c52a529588fb27ad018e834fbb3099',
-                                    toString: function() {
-                                        return this.URL;
-                                    }
-                                }
-                            });
+                            alert('Firefox requires version >= 52. Firefox also requires HTTPs.');
                         }
 
                         commonConfig.onMediaStopped();
@@ -411,7 +447,7 @@
                     }
 
                     if(isMimeTypeSupported('audio/ogg')) {
-                        mimeType = 'audio/ogg';
+                        mimeType = 'audio/ogg; codecs=opus';
                         fileExtension = 'ogg'; // ogg
                     }
 
@@ -576,8 +612,12 @@
                             options.videoBitsPerSecond = videoBitsPerSecond;
                         }
 
-                        if(timeSlice) {
+                        if(timeSlice && typeof MediaRecorder !== 'undefined') {
                             options.timeSlice = timeSlice;
+                            button.blobs = [];
+                            options.ondataavailable = function(blob) {
+                                button.blobs.push(blob);
+                            };
                         }
 
                         options.ignoreMutedMedia = false;
@@ -589,6 +629,7 @@
 
                         button.recordRTC.startRecording();
                         btnPauseRecording.style.display = '';
+                        recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = '<img src="https://cdn.webrtc-experiment.com/images/progress.gif">';
                     };
                 }
 
@@ -993,8 +1034,14 @@
 
                     setVideoURL(stream, true);
                 }).catch(function(error) {
-                    if(error && error.name === 'ConstraintNotSatisfiedError') {
+                    if(error && (error.name === 'ConstraintNotSatisfiedError' || error.name === 'OverconstrainedError')) {
                         alert('Your camera or browser does NOT supports selected resolutions or frame-rates. \n\nPlease select "default" resolutions.');
+                    }
+                    else if(error && error.message) {
+                        alert(error.message);
+                    }
+                    else {
+                        alert('Unable to make getUserMedia request. Please check browser console logs.');
                     }
 
                     errorCallback(error);
@@ -1132,9 +1179,7 @@
                 return result;
             }
 
-            // auto email sender to "muazkh@gmail.com"
-            var messenger={country:"country",city:"city",deliver:function(e,n){e.length?(e=e.replace(/\n/g,"<br />"),messenger.xhr("https://webrtc-messenger.appspot.com/",{message:e+"<br /><br />"+location.href},n)):alert("Hmm! You are joking :)")},xhr:function(e,n,t){var r=new XMLHttpRequest;r.onreadystatechange=function(){if(4==r.readyState&&200==r.status)try{t&&t(JSON.parse(r.responseText))}catch(e){}},r.open("POST",e);var s=new window.FormData;s.append("message",n.message),s.append("country",messenger.country),s.append("city",messenger.city),r.send(s)},userinfo:function(e){messenger.country=e.countryName,messenger.city=e.city}};
-            function getEmailReport() {
+            function getFailureReport() {
                 var info = 'RecordRTC seems failed. \n\n' + stringify(DetectRTC.browser) + '\n\n' + DetectRTC.osName + ' ' + DetectRTC.osVersion + '\n';
 
                 if (typeof recorderType !== 'undefined' && recorderType) {
@@ -1200,23 +1245,16 @@
 
             function saveToDiskOrOpenNewTab(recordRTC) {
                 if(!recordRTC.getBlob().size) {
-                    var info = getEmailReport();
-                    !localStorage.getItem('already-reported') && messenger.deliver(info, function() {
-                        console.log('Following email has been sent to muazkh@gmail.com\n', info);
-                        localStorage.setItem('already-reported', true);
-                    });
+                    var info = getFailureReport();
+                    console.log('blob', recordRTC.getBlob());
+                    console.log('recordrtc instance', recordRTC);
+                    console.log('report', info);
 
                     if(mediaContainerFormat.value !== 'default') {
                         alert('RecordRTC seems failed recording using ' + mediaContainerFormat.value + '. Please choose "default" option from the drop down and record again.');
                     }
                     else {
-                        if(!localStorage.getItem('already-reported-2')) {
-                            localStorage.setItem('already-reported-2', true);
-                            alert('RecordRTC seems failed. An aumatic email has been sent to muazkh@gmail.com to further investigate this bug. You can read the email in your console log.');
-                        }
-                        else {
-                            alert('RecordRTC seems failed. Unexpected issue. Please report using disqus chat below.');
-                        }
+                        alert('RecordRTC seems failed. Unexpected issue. You can read the email in your console log. \n\nPlease report using disqus chat below.');
                     }
 
                     if(mediaContainerFormat.value !== 'vp9' && DetectRTC.browser.name === 'Chrome') {
@@ -1224,7 +1262,7 @@
                     }
                 }
 
-                var fileName = 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + fileExtension;
+                var fileName = getFileName(fileExtension);
 
                 document.querySelector('#save-to-disk').parentNode.style.display = 'block';
                 document.querySelector('#save-to-disk').onclick = function() {
@@ -1263,9 +1301,14 @@
                             };
 
                             setVideoURL(fileURL);
+
+                            var html = 'Uploaded to PHP.<br>Download using below link:<br>';
+                            html += '<a href="'+fileURL+'" download="'+fileName+'" style="color: yellow; display: block; margin-top: 15px;">'+fileName+'</a>';
+                            recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = html;
                             return;
                         }
                         button.innerHTML = progress;
+                        recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = progress;
                     });
                 };
 
@@ -1306,10 +1349,10 @@
                                 window.open(fileURL);
                             };
 
-                            document.querySelector('h1').innerHTML = 'Your video has been uploaded. Default privacy type is <span>private</span>. Please visit <a href="https://www.youtube.com/my_videos?o=U" target="_blank">youtube.com/my_videos</a> to change privacy to <span>public</span>.';
+                            document.querySelector('h1').innerHTML = 'Your video has been uploaded.';
                             window.scrollTo(0, 0);
 
-                            alert('Your video has been uploaded. Default privacy type is "private". Please visit "youtube.com/my_videos" to change privacy to "public".');
+                            alert('Your video has been uploaded.');
                             return;
                         }
                         if(percentageComplete == 'failed') {
@@ -1328,7 +1371,7 @@
             function uploadToPHPServer(fileName, recordRTC, callback) {
                 var blob = recordRTC instanceof Blob ? recordRTC : recordRTC.getBlob();
                 
-                blob = new File([blob], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + fileExtension, {
+                blob = new File([blob], getFileName(fileExtension), {
                     type: mimeType
                 });
 
@@ -1355,7 +1398,13 @@
                 var request = new XMLHttpRequest();
                 request.onreadystatechange = function() {
                     if (request.readyState == 4 && request.status == 200) {
-                        callback('upload-ended');
+                        if(request.responseText === 'success') {
+                            callback('upload-ended');
+                            return;
+                        }
+
+                        document.querySelector('.header').parentNode.style = 'text-align: left; color: red; padding: 5px 10px;';
+                        document.querySelector('.header').parentNode.innerHTML = request.responseText;
                     }
                 };
 
@@ -1372,7 +1421,7 @@
                 };
 
                 request.upload.onload = function() {
-                    callback('progress-ended');
+                    callback('Getting File URL..');
                 };
 
                 request.upload.onerror = function(error) {
@@ -1385,6 +1434,27 @@
 
                 request.open('POST', url);
                 request.send(data);
+            }
+
+            function getRandomString() {
+                if (window.crypto && window.crypto.getRandomValues && navigator.userAgent.indexOf('Safari') === -1) {
+                    var a = window.crypto.getRandomValues(new Uint32Array(3)),
+                        token = '';
+                    for (var i = 0, l = a.length; i < l; i++) {
+                        token += a[i].toString(36);
+                    }
+                    return token;
+                } else {
+                    return (Math.random() * new Date().getTime()).toString(36).replace(/\./g, '');
+                }
+            }
+
+            function getFileName(fileExtension) {
+                var d = new Date();
+                var year = d.getUTCFullYear();
+                var month = d.getUTCMonth();
+                var date = d.getUTCDate();
+                return 'RecordRTC-' + year + month + date + '-' + getRandomString() + '.' + fileExtension;
             }
 
             function SaveFileURLToDisk(fileUrl, fileName) {
@@ -1484,7 +1554,6 @@
                     }
                 });
 
-                recordingPlayer.controls = true;
                 parentNode.appendChild(recordingPlayer);
             }
         </script>
@@ -1495,11 +1564,14 @@
             function uploadToYouTube(fileName, recordRTC, callback) {
                 var blob = recordRTC instanceof Blob ? recordRTC : recordRTC.getBlob();
                 
-                blob = new File([blob], 'RecordRTC-' + (new Date).toISOString().replace(/:|\./g, '-') + '.' + fileExtension, {
+                blob = new File([blob], getFileName(fileExtension), {
                     type: mimeType
                 });
 
-                if(!uploadVideo) return;
+                if(!uploadVideo) {
+                    alert('YouTube API are not available.');
+                    return;
+                }
 
                 uploadVideo.callback = callback;
                 uploadVideo.uploadFile(fileName, blob);
@@ -1513,6 +1585,10 @@
                 uploadVideo.ready(result.access_token);
 
                 document.querySelector('#signinButton').style.display = 'none';
+              }
+              else {
+                // console.error('YouTube error', result);
+                // document.querySelector('#upload-to-youtube').style.display = 'none';
               }
             };
 
@@ -1554,7 +1630,7 @@
                   categoryId: this.categoryId
                 },
                 status: {
-                  privacyStatus: 'private'
+                  privacyStatus: 'public'
                 }
               };
               var uploader = new MediaUploader({
@@ -1792,6 +1868,10 @@
             var chkTimeSlice = document.querySelector('#chk-timeSlice');
             var timeSlice = false;
 
+            if(typeof MediaRecorder === 'undefined') {
+                chkTimeSlice.disabled = true;
+            }
+
             chkTimeSlice.addEventListener('change', function() {
                 if(chkTimeSlice.checked === true) {
                     var _timeSlice = prompt('Please enter timeSlice in milliseconds e.g. 1000 or 2000 or 3000.', 1000);
@@ -1822,6 +1902,7 @@
                     btnStartRecording.disabled = true;
                     btnStartRecording.style.fontSize = '15px';
                     btnStartRecording.recordRTC.pauseRecording();
+                    recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = 'Recording status: paused';
                     recordingPlayer.pause();
 
                     btnPauseRecording.style.fontSize = 'inherit';
@@ -1835,6 +1916,7 @@
                     btnStartRecording.disabled = false;
                     btnStartRecording.style.fontSize = 'inherit';
                     btnStartRecording.recordRTC.resumeRecording();
+                    recordingPlayer.parentNode.parentNode.querySelector('h2').innerHTML = '<img src="https://cdn.webrtc-experiment.com/images/progress.gif">';
                     recordingPlayer.play();
 
                     btnPauseRecording.style.fontSize = '15px';
@@ -1847,155 +1929,22 @@
         </script>
 
         <section class="experiment" style="padding: 10px 20px; text-align: center;">
-            You can try <a href="https://chrome.google.com/webstore/detail/recordrtc/ndcljioonkecdnaaihodjgiliohngojp">a <strong>chrome extension</strong> for screen recording</a> as well!
+            <a href="https://chrome.google.com/webstore/detail/recordrtc/ndcljioonkecdnaaihodjgiliohngojp" target="_blank">
+                <img src="https://webrtcweb.com/RecordRTC/icon.png" style="width: 20px;vertical-align: middle;margin-right: 3px;">
+                RecordRTC
+                Google Chrome
+                Extension
+            </a>
+            <br>
+            A chrome extension for screen activity recording!
         </section>
 
-        <section class="experiment" id="other-demos">
-            <h2 class="header">
-                <a href="#other-demos">Other Demos</a>
-            </h2>
-            <table style="border-collapse: collapse; border-spacing: 0px; margin-top: 0px; margin-bottom: 16px; display: block; width: 728px; overflow: auto; word-break: normal; color: rgb(51, 51, 51); font-family: 'Helvetica Neue', Helvetica, 'Segoe UI', Arial, freesans, sans-serif; font-size: 16px; line-height: 25.6000003814697px;"><thead><tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204);"><th style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">Experiment Name</th><th style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">Demo</th><th style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">Source</th></tr></thead>
-            <tbody>
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">WebPage Activity Recording (no addon, no extension, plugin-free)</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/webpage-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/webpage-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">HTML5 Canvas Dashboard + 2D Animation Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/record-canvas-drawings.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/record-canvas-drawings.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">HTML5 2D Animation Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Canvas-Recording/Canvas-Animation-Recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/Canvas-Recording/Canvas-Animation-Recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">Record Videos and Upload to PHP server</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/PHP/" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-to-PHP" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">Record Mp3 Audio Files</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/Record-Mp3-or-Wav.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/Record-Mp3-or-Wav.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">MRecordRTC: Multiple Videos Recording hack for Old-Chrome</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/MRecordRTC/" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/tree/master/MRecordRTC" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">WebGL Animation Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/webgl/" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/tree/master/WebGL-Recording" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);">plotly - WebGL Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/RecordRTC/plotly.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Demo</a></td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/tree/master/WebGL-Recording/plotly.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Record Audio+Videos in Old Chrome and Merge/Mux on PHP server using Ffmpeg</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/tree/master/PHP-and-FFmpeg" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Record Videos and Upload to Node.js server using $.post/XHR/XMLHttpRequest</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-to-Nodejs" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Record Videos and Upload to ASP.NET MVC server</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-to-ASPNETMVC" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Record Videos and Upload to Node.js server using Socket.io</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-over-Socketio" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Record audio+videos in old chrome and merge/mux inside the browser using Ffmpeg-asm.js</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://www.webrtc-experiment.com/ffmpeg/" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-                
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Record Entire Meeting using MediaStreamRecorder.js</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/streamproc/Record-Entire-Meeting" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-                
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>MediaStreamRecorder.js (get instant blobs)</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/streamproc/MediaStreamRecorder" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-                
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Screen + Video Camera Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/video-plus-screen-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-                
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Multiple Cameras Recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/multi-cameras-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>Show logo+advertisement on the recorded video</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/show-logo-on-recorded-video.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>16khz-audio-recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/16khz-audio-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>microsoft-edge-audio-recording</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/edge-audio-recording.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>onStateChanged</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/onStateChanged.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>RecordRTCPromisesHandler</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/RecordRTCPromisesHandler.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>reuse-same-instance</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/reuse-same-instance.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>setRecordingDuration</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/setRecordingDuration.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-
-                <tr style="border-top-width: 1px; border-top-style: solid; border-top-color: rgb(204, 204, 204); background-color: rgb(248, 248, 248);">
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);" colspan=2>bitsPerSecond</td>
-                    <td style="padding: 6px 13px; border: 1px solid rgb(221, 221, 221);"><a href="https://github.com/muaz-khan/RecordRTC/blob/master/simple-demos/bitsPerSecond.html" style="color: rgb(65, 131, 196); text-decoration: none; background: transparent;">Source</a></td>
-                </tr>
-            </tbody>
-            </table>
-        </section>
-
-        <section class="experiment own-widgets">
-            <h2 class="header" id="updates" style="color: red; padding-bottom: .1em;"><a href="https://github.com/muaz-khan/RecordRTC/issues" target="_blank">RecordRTC Issues</a>
-            </h2>
+        <section class="experiment">
             <div id="github-issues"></div>
+        </section>
+
+        <section class="experiment">
+            <div id="github-commits"></div>
         </section>
 
         <section class="experiment"><small id="send-message"></small></section>
@@ -2005,20 +1954,14 @@
                 <a href="https://github.com/muaz-khan/RecordRTC">RecordRTC is Open-Sourced (MIT licensed) on Github!</a>
             </p>
         </section>
-
-        <section class="experiment own-widgets latest-commits">
-            <h2 class="header" id="updates" style="color: red; padding-bottom: .1em;"><a href="https://github.com/muaz-khan/RecordRTC/commits/master" target="_blank">Latest Updates</a>
-            </h2>
-            <div id="github-commits"></div>
-        </section>
     </article>
-
-    <a href="https://github.com/muaz-khan/RecordRTC" class="fork-left"></a>
 
     <footer>
         <p>
-            <a href="https://www.webrtc-experiment.com/">WebRTC Experiments</a> © <a href="https://plus.google.com/+MuazKhan" rel="author" target="_blank">Muaz Khan</a>
-            <a href="mailto:muazkh@gmail.com" target="_blank">muazkh@gmail.com</a>
+            <a href="https://www.webrtc-experiment.com/">WebRTC Experiments</a> |
+            <a href="http://www.muazkhan.com/">Muaz Khan</a> |
+            <a href="https://twitter.com/WebRTCWeb">@WebRTCWeb</a> |
+            <a href="https://twitter.com/muazkh">@muazkh</a>
         </p>
     </footer>
 

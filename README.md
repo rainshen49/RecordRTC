@@ -2,7 +2,7 @@
 
 # Demo: https://www.webrtc-experiment.com/RecordRTC/
 
-[RecordRTC Documentation](http://RecordRTC.org/) / [RecordRTC Wiki Pages](https://github.com/muaz-khan/RecordRTC/wiki) / [RecordRTC Demo](https://www.webrtc-experiment.com/RecordRTC/) / [WebRTC Experiments](https://www.webrtc-experiment.com/)
+[RecordRTC Documentation](https://RecordRTC.org/) / [RecordRTC Wiki Pages](https://github.com/muaz-khan/RecordRTC/wiki) / [RecordRTC Demo](https://www.webrtc-experiment.com/RecordRTC/) / [WebRTC Experiments](https://www.webrtc-experiment.com/)
 
 [![npm](https://img.shields.io/npm/v/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![downloads](https://img.shields.io/npm/dm/recordrtc.svg)](https://npmjs.org/package/recordrtc) [![Build Status: Linux](https://travis-ci.org/muaz-khan/RecordRTC.png?branch=master)](https://travis-ci.org/muaz-khan/RecordRTC)
 
@@ -16,17 +16,18 @@
 
 Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) directory for development files.
 
-1. [RecordRTC API Reference](http://RecordRTC.org/RecordRTC.html)
-2. [MediaStreamRecorder API Reference](http://RecordRTC.org/MediaStreamRecorder.html)
-3. [StereoAudioRecorder API Reference](http://RecordRTC.org/StereoAudioRecorder.html)
-4. [WhammyRecorder API Reference](http://RecordRTC.org/WhammyRecorder.html)
-5. [Whammy API Reference](http://RecordRTC.org/Whammy.html)
-6. [CanvasRecorder API Reference](http://RecordRTC.org/CanvasRecorder.html)
-7. [MultiStreamRecorder API Reference](http://recordrtc.org/MultiStreamRecorder.html)
-8. [MRecordRTC API Reference](http://RecordRTC.org/MRecordRTC.html)
-9. [RecordRTCPromisesHandler API Reference](http://recordrtc.org/RecordRTCPromisesHandler.html)
-10. [GifRecorder API Reference](http://RecordRTC.org/GifRecorder.html)
-11. [Global API Reference](http://RecordRTC.org/global.html)
+1. [RecordRTC API Reference](https://RecordRTC.org/RecordRTC.html)
+2. [MediaStreamRecorder API Reference](https://RecordRTC.org/MediaStreamRecorder.html)
+3. [StereoAudioRecorder API Reference](https://RecordRTC.org/StereoAudioRecorder.html)
+4. [WhammyRecorder API Reference](https://RecordRTC.org/WhammyRecorder.html)
+5. [Whammy API Reference](https://RecordRTC.org/Whammy.html)
+6. [CanvasRecorder API Reference](https://RecordRTC.org/CanvasRecorder.html)
+7. [MultiStreamRecorder API Reference](https://RecordRTC.org/MultiStreamRecorder.html)
+8. [MRecordRTC API Reference](https://RecordRTC.org/MRecordRTC.html)
+9. [RecordRTCPromisesHandler API Reference](https://RecordRTC.org/RecordRTCPromisesHandler.html)
+10. [GifRecorder API Reference](https://RecordRTC.org/GifRecorder.html)
+11. [Global API Reference](https://RecordRTC.org/global.html)
+12 [RecordRTC and Upload to PHP Server](http://www.muazkhan.com/2017/08/recordrtc-and-upload-to-php-server.html)
 
 ## Browsers Support:
 
@@ -37,7 +38,7 @@ Please check [dev](https://github.com/muaz-khan/RecordRTC/tree/master/dev) direc
 | Opera | [Stable](http://www.opera.com/) / [NEXT](http://www.opera.com/computer/next)  | Audio+Video (Both local/remote) |
 | Android | [Chrome](https://play.google.com/store/apps/details?id=com.chrome.beta&hl=en) / [Firefox](https://play.google.com/store/apps/details?id=org.mozilla.firefox) / [Opera](https://play.google.com/store/apps/details?id=com.opera.browser) | Audio+Video (Both local/remote) |
 | Microsoft Edge | [Normal Build](https://www.microsoft.com/en-us/windows/microsoft-edge) | **Only Audio** - No Video - No Canvas - No Screen |
-| Safari 11 | preview | **Only Audio** - No Video - No Canvas - No Screen |
+| Safari 11 | preview/beta (OSX/iOS11) | [Only StereoAudioRecorder](https://www.webrtc-experiment.com/RecordRTC/simple-demos/audio-recording.html) - No Video - No Canvas - No Screen |
 
 ## Frameworks
 
@@ -224,14 +225,18 @@ bower install recordrtc
 <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
 ```
 
+Otherwise check cdnjs below.
+
 ## Releases
 
 You can even link specific [releases](https://github.com/muaz-khan/RecordRTC/releases):
 
 ```html
-<!-- use 5.4.2 or any other version -->
-<script src="https://github.com/muaz-khan/RecordRTC/releases/download/5.4.2/RecordRTC.js"></script>
+<!-- use 5.4.7 or any other version on cdnjs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.4.7/RecordRTC.js"></script>
 ```
+
+Note: You can use `RecordRTC.min.js` as well. (on webrtc-experiment or cdnjs)
 
 ## How to capture stream?
 
@@ -316,10 +321,23 @@ var options = {
 var recordRTC = RecordRTC(stream, options);
 ```
 
+You can pass `options` object over `startRecording` method as well:
+
+```javascript
+var recordRTC = RecordRTC(stream);
+
+var options = {
+    recorderType: MediaStreamRecorder,
+    mimeType: 'video/webm\;codecs=vp9'
+};
+recordRTC.startRecording(options);
+```
+
 * `type` accepts `video` or `audio` or `canvas` or `gif`
 * `mimeType` accepts [all these values](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/mimeType)
 * `recorderType` accepts `MediaStreamRecorder` or `StereoAudioRecorder` or `WhammyRecorder` or `GifRecorder` or any recorder type from [this page](https://github.com/muaz-khan/RecordRTC/tree/master/dev)
 * `timeSlice` accepts numbers in milliseconds; use this to force intervals-based blobs
+* `ondataavailable` pass this function along with `timeSlice` to get intervals based blobs
 * `checkForInactiveTracks` accepts `true` or `false`; use this to disable default inactive-stream-checker functions
 * `onTimeStamp` it is a function that is called-back by the MediaStreamRecorder; `timeSlice` parameter is required for this function
 * `bitsPerSecond` accepts numbers in bits; applies both to audio and video tracks
@@ -437,6 +455,65 @@ Internal recorders can add extra methods. Same as MultiStreamRecorder which is s
 
 1. `addStreams`
 2. `resetVideoStreams`
+
+## `onStateChanged`
+
+Use this method to detect status of the recording:
+
+```javascript
+recorder = RecordRTC(stream, {
+    type: 'video',
+    onStateChanged: function(state) {
+        alert('Current recorder status: ' + state);
+    }
+});
+
+recorder.startRecording();
+```
+
+## `state`
+
+Use this property to detect status of the recording:
+
+```javascript
+recorder = RecordRTC(stream, {
+    type: 'video'
+});
+
+alert('Current recorder status: ' + recorder.state);
+
+recorder.startRecording();
+
+alert('Current recorder status: ' + recorder.state);
+
+recorder.stopRecording(function() {
+    alert('Current recorder status: ' + recorder.state);
+});
+```
+
+You can even use `getState` method:
+
+```javascript
+alert('Current recorder status: ' + recorder.getState());
+```
+
+## `version`
+
+Detect current RecordRTC version:
+
+```javascript
+recorder = RecordRTC(stream, {
+    type: 'video'
+});
+
+alert('Current recorder version: ' + recorder.version);
+```
+
+You can even use `RecordRTC.version`:
+
+```javascript
+alert('Current recorder version: ' + RecordRTC.version);
+```
 
 ## Echo Issues
 
@@ -658,7 +735,7 @@ var audioRecorder = RecordRTC(mediaStream, {
 })
 ```
 
-It means that ALL_BROWSERS will be using [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) i.e. WebAudio API for audio recording.
+It means that ALL_BROWSERS will be using [StereoAudioRecorder](https://RecordRTC.org/StereoAudioRecorder.html) i.e. WebAudio API for audio recording.
 
 This feature brings remote audio recording support in Firefox, and local audio recording support in Microsoft Edge.
 
@@ -707,7 +784,7 @@ var recorder = RecordRTC(mediaStream, {
 
 ## `numberOfAudioChannels`
 
-You can force [StereoAudioRecorder](http://RecordRTC.org/StereoAudioRecorder.html) to record single-audio-channel only. It allows you reduce WAV file size to half.
+You can force [StereoAudioRecorder](https://RecordRTC.org/StereoAudioRecorder.html) to record single-audio-channel only. It allows you reduce WAV file size to half.
 
 ```javascript
 var audioRecorder = RecordRTC(audioStream, {
@@ -824,7 +901,7 @@ If you passed invalid value then you'll get blank audio.
 
 ## `sampleRate`
 
-Here is jow to customize Sample-Rate for audio recording?
+Here is how to customize Sample-Rate for audio recording?
 
 ```javascript
 // The sample rate (in sample-frames per second) at which the
@@ -872,7 +949,7 @@ This option allows you set MediaRecorder output format:
 
 ```javascript
 var options = {
-  mimeType 'video/webm', // or video/webm\;codecs=h264 or video/webm\;codecs=vp9
+  mimeType: 'video/webm', // or video/webm\;codecs=h264 or video/webm\;codecs=vp9
   bitsPerSecond: 128000
 };
 var recorder = RecordRTC(mediaStream, options);
@@ -1085,6 +1162,16 @@ recordRTC.getFromDisk(function(dataURL) {
 
 In the above example; you can see that `recordRTC` instance object is used instead of global `RecordRTC` object.
 
+## `destroy`
+
+Destroy all internal recorders. Clear memory and ask RecordRTC to stop doing anything internally:
+
+```javascript
+recorder.destroy();
+```
+
+Note: You can use this method anytime, anywhere; even during recording a stream.
+
 ## Promises
 
 ```html
@@ -1128,9 +1215,9 @@ Demo:
 3. [Canvas2D](http://www.w3.org/html/wg/drafts/2dcontext/html5_canvas/)
 4. [Media Capture and Streams](http://www.w3.org/TR/mediacapture-streams/)
 
-## Contribute in [RecordRTC.org](http://RecordRTC.org) domain
+## Contribute in [RecordRTC.org](https://RecordRTC.org) domain
 
-The domain http://RecordRTC.org is open-sourced here:
+The domain https://RecordRTC.org is open-sourced here:
 
 * https://github.com/muaz-khan/RecordRTC/tree/gh-pages
 

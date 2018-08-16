@@ -35,6 +35,7 @@ module.exports = function(grunt) {
             dist: {
                 src: [
                     'dev/RecordRTC.js',
+                    'dev/RecordRTC.IndexedDB.js',
                     'dev/RecordRTC-Configuration.js',
                     'dev/GetRecorderType.js',
                     'dev/MRecordRTC.js',
@@ -49,12 +50,30 @@ module.exports = function(grunt) {
                     'dev/Whammy.js',
                     'dev/DiskStorage.js',
                     'dev/GifRecorder.js',
+                    'dev/MultiStreamsMixer.js', // github/muaz-khan/MultiStreamsMixer
                     'dev/MultiStreamRecorder.js',
                     'dev/RecordRTC.promises.js'
                 ],
-                dest: 'RecordRTC.js',
+                dest: './temp/RecordRTC.js',
             },
         },
+        replace: {
+            dist: {
+                options: {
+                    patterns: [{
+                        match: 'version',
+                        replacement: versionNumber
+                    }]
+                },
+                files: [{
+                    expand: true,
+                    flatten: true,
+                    src: ['./temp/RecordRTC.js'],
+                    dest: './'
+                }]
+            }
+        },
+        clean: ['./temp'],
         jshint: {
             options: {
                 globals: {
@@ -126,6 +145,16 @@ module.exports = function(grunt) {
                 }
             }
         },
+        copy: {
+            main: {
+                options: {
+                    flatten: true
+                },
+                files: {
+                    'RecordRTC.js': ['RecordRTC.js']
+                },
+            },
+        },
         jsbeautifier: {
             files: [
                 // 'RecordRTC.js',
@@ -189,5 +218,5 @@ module.exports = function(grunt) {
 
     // set default tasks to run when grunt is called without parameters
     // http://gruntjs.com/api/grunt.task
-    grunt.registerTask('default', ['concat', 'jsbeautifier', 'jshint', 'uglify']);
+    grunt.registerTask('default', ['concat', 'replace', 'jsbeautifier', 'jshint', 'copy', 'uglify', 'clean']);
 };

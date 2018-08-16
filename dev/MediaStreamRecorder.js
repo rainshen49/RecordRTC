@@ -16,7 +16,7 @@
  *     bitsPerSecond: 256 * 8 * 1024,  // if this is provided, skip above two
  *     checkForInactiveTracks: true,
  *     timeSlice: 1000, // concatenate intervals based blobs
- *     ignoreMutedMedia: true
+ *     ondataavailable: function() {} // get intervals based blobs
  * }
  * var recorder = new MediaStreamRecorder(mediaStream, config);
  * recorder.record();
@@ -144,9 +144,6 @@ function MediaStreamRecorder(mediaStream, config) {
             }
         }
 
-        // ignore muted/disabled/inactive tracks
-        mediaRecorder.ignoreMutedMedia = config.ignoreMutedMedia === true;
-
         // Dispatching OnDataAvailable Handler
         mediaRecorder.ondataavailable = function(e) {
             if (e.data) {
@@ -157,6 +154,14 @@ function MediaStreamRecorder(mediaStream, config) {
                 if (e.data && e.data.size && e.data.size > 100) {
                     arrayOfBlobs.push(e.data);
                     updateTimeStamp();
+
+                    if (typeof config.ondataavailable === 'function') {
+                        // intervals based blobs
+                        var blob = config.getNativeBlob ? e.data : new Blob([e.data], {
+                            type: getMimeType(recorderHints)
+                        });
+                        config.ondataavailable(blob);
+                    }
                 }
                 return;
             }
@@ -166,7 +171,7 @@ function MediaStreamRecorder(mediaStream, config) {
                 // even if there is invalid data
                 if (self.recordingCallback) {
                     self.recordingCallback(new Blob([], {
-                        type: mediaRecorder.mimeType || recorderHints.mimeType || 'video/webm'
+                        type: getMimeType(recorderHints)
                     }));
                     self.recordingCallback = null;
                 }
@@ -174,7 +179,7 @@ function MediaStreamRecorder(mediaStream, config) {
             }
 
             self.blob = config.getNativeBlob ? e.data : new Blob([e.data], {
-                type: mediaRecorder.mimeType || recorderHints.mimeType || 'video/webm'
+                type: getMimeType(recorderHints)
             });
 
             if (self.recordingCallback) {
@@ -200,6 +205,14 @@ function MediaStreamRecorder(mediaStream, config) {
         };
 
         mediaRecorder.onerror = function(error) {
+            if (!error) {
+                return;
+            }
+
+            if (!error.name) {
+                error.name = 'UnknownError';
+            }
+
             allStates.push('error: ' + error);
 
             if (!config.disableLogs) {
@@ -274,6 +287,14 @@ function MediaStreamRecorder(mediaStream, config) {
         }
     }
 
+    function getMimeType(secondObject) {
+        if (mediaRecorder && mediaRecorder.mimeType) {
+            return mediaRecorder.mimeType;
+        }
+
+        return secondObject.mimeType || 'video/webm';
+    }
+
     /**
      * This method stops recording MediaStream.
      * @param {function} callback - Callback function, that is used to pass recorded blob back to the callee.
@@ -285,17 +306,15 @@ function MediaStreamRecorder(mediaStream, config) {
      * });
      */
     this.stop = function(callback) {
+        callback = callback || function() {};
+
         self.manuallyStopped = true; // used inside the mediaRecorder.onerror
 
         if (!mediaRecorder) {
             return;
         }
 
-        this.recordingCallback = function(blob) {
-            if (callback) {
-                callback(blob);
-            }
-        };
+        this.recordingCallback = callback;
 
         if (mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
@@ -304,7 +323,7 @@ function MediaStreamRecorder(mediaStream, config) {
         if (typeof config.timeSlice === 'number') {
             setTimeout(function() {
                 self.blob = new Blob(arrayOfBlobs, {
-                    type: mediaRecorder.mimeType || config.mimeType || 'video/webm'
+                    type: getMimeType(config)
                 });
 
                 self.recordingCallback(self.blob);
@@ -354,10 +373,18 @@ function MediaStreamRecorder(mediaStream, config) {
      * recorder.clearRecordedData();
      */
     this.clearRecordedData = function() {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            self.stop(clearRecordedDataCB);
+        }
+
+        clearRecordedDataCB();
+    };
+
+    function clearRecordedDataCB() {
         arrayOfBlobs = [];
         mediaRecorder = null;
         self.timestamps = [];
-    };
+    }
 
     // Reference to "MediaRecorder" object
     var mediaRecorder;

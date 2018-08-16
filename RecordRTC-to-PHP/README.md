@@ -1,5 +1,7 @@
 ## [RecordRTC to PHP](https://github.com/muaz-khan/RecordRTC/tree/master/RecordRTC-to-PHP) / [Try LIVE Demo](https://www.webrtc-experiment.com/RecordRTC/PHP/)
 
+Please check tutorial: [RecordRTC and Upload to PHP Server](http://www.muazkhan.com/2017/08/recordrtc-and-upload-to-php-server.html)
+
 > This demo allows you record and upload to PHP server. Files on PHP server are auto-deleted as soon as you leave this page. 
 > 
 > This demo runs top over RecordRTC: [https://github.com/muaz-khan/RecordRTC](https://github.com/muaz-khan/RecordRTC)
@@ -79,15 +81,15 @@ function xhr(url, data, callback) {
 
 ## RecordRTC Documentation
 
-1. [RecordRTC API Reference](http://RecordRTC.org/RecordRTC.html)
-2. [MRecordRTC API Reference](http://RecordRTC.org/MRecordRTC.html)
-3. [MediaStreamRecorder API Reference](http://RecordRTC.org/MediaStreamRecorder.html)
-5. [StereoAudioRecorder API Reference](http://RecordRTC.org/StereoAudioRecorder.html)
-6. [WhammyRecorder API Reference](http://RecordRTC.org/WhammyRecorder.html)
-7. [Whammy API Reference](http://RecordRTC.org/Whammy.html)
-8. [CanvasRecorder API Reference](http://RecordRTC.org/CanvasRecorder.html)
-9. [GifRecorder API Reference](http://RecordRTC.org/GifRecorder.html)
-10. [Global API Reference](http://RecordRTC.org/global.html)
+1. [RecordRTC API Reference](https://RecordRTC.org/RecordRTC.html)
+2. [MRecordRTC API Reference](https://RecordRTC.org/MRecordRTC.html)
+3. [MediaStreamRecorder API Reference](https://RecordRTC.org/MediaStreamRecorder.html)
+5. [StereoAudioRecorder API Reference](https://RecordRTC.org/StereoAudioRecorder.html)
+6. [WhammyRecorder API Reference](https://RecordRTC.org/WhammyRecorder.html)
+7. [Whammy API Reference](https://RecordRTC.org/Whammy.html)
+8. [CanvasRecorder API Reference](https://RecordRTC.org/CanvasRecorder.html)
+9. [GifRecorder API Reference](https://RecordRTC.org/GifRecorder.html)
+10. [Global API Reference](https://RecordRTC.org/global.html)
 
 
 ## License
